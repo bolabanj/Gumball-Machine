@@ -21,9 +21,23 @@ public class GumballService implements IGumballService{
 
     @Override
     public TransitionResult insertQuarter(String id) throws IOException {
+        return Helper(id, "insert");
+    }
+    public TransitionResult Helper(String id, String type) throws IOException {
         GumballMachineRecord record = gumballRepository.findById(id);
         IGumballMachine machine = new GumballMachine(record.getId(), record.getState(), record.getCount());
-        TransitionResult result = machine.insertQuarter();
+        TransitionResult result;
+        switch (type){
+            case "insert":
+                result = machine.insertQuarter();
+            case "eject":
+                result =  machine.ejectQuarter();
+            case "turn":
+                result =  machine.turnCrank();
+            default:
+                result = new TransitionResult(false, "Invalid type", record.getState(), record.getCount());
+        }
+//        TransitionResult result = machine.insertQuarter();
         if(result.succeeded()) {
             record.setState(result.stateAfter());
             record.setCount(result.countAfter());
@@ -34,30 +48,14 @@ public class GumballService implements IGumballService{
 
     @Override
     public TransitionResult ejectQuarter(String id) throws IOException {
-        GumballMachineRecord record = gumballRepository.findById(id);
-        IGumballMachine machine = new GumballMachine(record.getId(), record.getState(), record.getCount());
-        TransitionResult result = machine.ejectQuarter();
-        if(result.succeeded()) {
-            record.setState(result.stateAfter());
-            record.setCount(result.countAfter());
-            save(record);
-        }
-        return result;
+        return Helper(id, "eject");
     }
 
 
 
     @Override
     public TransitionResult turnCrank(String id) throws IOException {
-        GumballMachineRecord record = gumballRepository.findById(id);
-        IGumballMachine machine = new GumballMachine(record.getId(), record.getState(), record.getCount());
-        TransitionResult result = machine.turnCrank();
-        if(result.succeeded()) {
-            record.setState(result.stateAfter());
-            record.setCount(result.countAfter());
-            save(record);
-        }
-        return result;
+        return Helper(id, "turn");
     }
 
 
